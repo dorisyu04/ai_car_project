@@ -35,33 +35,33 @@
 ---
 
 ## 🧠 系統架構
-Camera (PiCamera2)
-↓
-Image Processing (OpenCV)
-↓
-Lane Detection / YOLO
-↓
-PID Controller
-↓
-Motor Control (PCA9685)
-↓
-Flask Web Server
-↓
-Browser UI (Remote Control)
+-Camera (PiCamera2)
+-↓
+-Image Processing (OpenCV)
+-↓
+-Lane Detection / YOLO
+-↓
+-PID Controller
+-↓
+-Motor Control (PCA9685)
+-↓
+-Flask Web Server
+-↓
+-Browser UI (Remote Control)
 
 ---
 
 ## 📂 專案結構
 
 ai_car_project/
-├── app.py # Flask 主程式（影像串流 + 控制）
-├── motor_control.py # 馬達控制模組
-├── pid_controller.py # PID 控制器
-├── templates/
-│ └── index.html # 前端 UI
-└── static/
-├── css/style.css # 網頁樣式
-└── js/main.js # 控制邏輯
+-├── app.py # Flask 主程式（影像串流 + 控制）
+-├── motor_control.py # 馬達控制模組
+-├── pid_controller.py # PID 控制器
+-├── templates/
+-│ └── index.html # 前端 UI
+-└── static/
+-├── css/style.css # 網頁樣式
+-└── js/main.js # 控制邏輯
 
 ---
 
