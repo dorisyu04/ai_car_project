@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Car Web Control</title>
+    <style>
+        :root {
+            --bg-1: #061120;
+            --bg-2: #0b1f36;
+            --panel: rgba(16, 24, 40, 0.82);
+            --border: rgba(255, 255, 255, 0.10);
+            --text: #eef4ff;
+            --muted: #a8b3c7;
+            --blue: #3b82f6;
+            --blue-hover: #2563eb;
+            --green: #10b981;
+            --green-hover: #059669;
+            --red: #ef4444;
+            --red-hover: #dc2626;
+            --gray-btn: #334155;
+            --gray-btn-hover: #475569;
+            --shadow-lg: 0 24px 60px rgba(0, 0, 0, 0.40);
+            --shadow-md: 0 12px 30px rgba(0, 0, 0, 0.28);
+            --radius-xl: 24px;
+            --radius-lg: 18px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            min-height: 100%;
+            font-family: "Segoe UI", Arial, sans-serif;
+            color: var(--text);
+            background:
+                radial-gradient(circle at 15% 20%, rgba(34, 211, 238, 0.12), transparent 22%),
+                radial-gradient(circle at 85% 10%, rgba(59, 130, 246, 0.14), transparent 24%),
+                radial-gradient(circle at 50% 100%, rgba(16, 185, 129, 0.08), transparent 18%),
+                linear-gradient(135deg, var(--bg-1), var(--bg-2));
+            background-attachment: fixed;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background-image:
+                linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+            background-size: 36px 36px;
+            mask-image: linear-gradient(to bottom, rgba(0,0,0,0.5), rgba(0,0,0,0.15));
+        }
+
+        .container {
+            max-width: 1380px;
+            margin: 0 auto;
+            padding: 28px 22px 34px;
+        }
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 22px;
+            flex-wrap: wrap;
+        }
+
+        .brand {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .brand-badge {
+            display: inline-flex;
+            align-items: center;
+            width: fit-content;
+            padding: 7px 12px;
+            border: 1px solid rgba(34, 211, 238, 0.25);
+            border-radius: 999px;
+            background: rgba(34, 211, 238, 0.08);
+            color: #bff6ff;
+            font-size: 12px;
+            letter-spacing: 0.8px;
+        }
+
+        .title {
+            margin: 0;
+            font-size: 42px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+        }
+
+        .subtitle {
+            margin: 0;
+            color: var(--muted);
+            font-size: 15px;
+            line-height: 1.7;
+        }
+
+        .live-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            border-radius: 999px;
+            background: rgba(10, 18, 35, 0.65);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-md);
+            color: var(--text);
+            font-weight: 600;
+        }
+
+        .live-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #22c55e;
+            box-shadow: 0 0 12px #22c55e;
+            animation: pulse 1.4s infinite ease-in-out;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(0.9);
+                opacity: 0.7;
+            }
+            50% {
+                transform: scale(1.15);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(0.9);
+                opacity: 0.7;
+            }
+        }
+
+        .main-layout {
+            display: grid;
+            grid-template-columns: 1.55fr 0.95fr;
+            gap: 22px;
+        }
+
+        .panel {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-lg);
+            backdrop-filter: blur(16px);
+            overflow: hidden;
+        }
+
+        .panel-inner {
+            padding: 20px;
+        }
+
+        .video-shell {
+            position: relative;
+            border-radius: 20px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.10);
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .video-shell::before {
+            content: "LIVE CAMERA";
+            position: absolute;
+            top: 14px;
+            left: 14px;
+            z-index: 3;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: rgba(0,0,0,0.55);
+            border: 1px solid rgba(255,255,255,0.12);
+            font-size: 11px;
+            letter-spacing: 0.8px;
+            color: #dbeafe;
+        }
+
+        .video-shell img {
+            display: block;
+            width: 640px;
+            height: 480px;
+            max-width: 100%;
+            object-fit: contain;
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+            margin-top: 18px;
+        }
+
+        .status-card {
+            background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.03));
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 16px;
+            min-height: 92px;
+        }
+
+        .status-label {
+            font-size: 12px;
+            color: var(--muted);
+            margin-bottom: 10px;
+            letter-spacing: 0.4px;
+        }
+
+        .status-value {
+            font-size: 18px;
+            font-weight: 700;
+            line-height: 1.4;
+            word-break: break-word;
+        }
+
+        .status-online {
+            color: #6ee7b7;
+        }
+
+        .status-auto {
+            color: #7dd3fc;
+        }
+
+        .status-stop {
+            color: #fca5a5;
+        }
+
+        .side-wrap {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .section-card {
+            background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.03));
+            border: 1px solid var(--border);
+            border-radius: 22px;
+            padding: 18px;
+        }
+
+        .section-head {
+            margin-bottom: 14px;
+        }
+
+        .section-head h2 {
+            margin: 0 0 6px;
+            font-size: 22px;
+            font-weight: 800;
+        }
+
+        .section-head p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 14px;
+            line-height: 1.65;
+        }
+
+        .pad {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .row {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            width: 100%;
+        }
+
+        button {
+            border: none;
+            outline: none;
+            cursor: pointer;
+            min-width: 110px;
+            padding: 15px 18px;
+            border-radius: 16px;
+            font-size: 17px;
+            font-weight: 700;
+            color: white;
+            transition: transform 0.14s ease, box-shadow 0.16s ease, background 0.16s ease;
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(1px) scale(0.985);
+        }
+
+        .btn-main {
+            background: linear-gradient(180deg, #4a91ff, #2563eb);
+        }
+
+        .btn-main:hover {
+            background: linear-gradient(180deg, #5ca0ff, #1f5ad5);
+        }
+
+        .btn-stop {
+            background: linear-gradient(180deg, #ff6767, #ef4444);
+        }
+
+        .btn-stop:hover {
+            background: linear-gradient(180deg, #ff7474, #dc2626);
+        }
+
+        .btn-cam {
+            background: linear-gradient(180deg, #42526a, #334155);
+        }
+
+        .btn-cam:hover {
+            background: linear-gradient(180deg, #51637d, #475569);
+        }
+
+        .btn-auto {
+            background: linear-gradient(180deg, #19c79a, #10b981);
+        }
+
+        .btn-auto:hover {
+            background: linear-gradient(180deg, #20d2a3, #0ea371);
+        }
+
+        .btn-wide {
+            min-width: 130px;
+        }
+
+        .footer-note {
+            margin-top: 16px;
+            padding: 14px 16px;
+            border-radius: 16px;
+            background: rgba(34, 211, 238, 0.06);
+            border: 1px solid rgba(34, 211, 238, 0.14);
+            color: #d8f9ff;
+            font-size: 14px;
+            line-height: 1.8;
+        }
+
+        @media (max-width: 1160px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .status-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 720px) {
+            .title {
+                font-size: 32px;
+            }
+
+            .container {
+                padding: 18px 12px 24px;
+            }
+
+            .panel-inner {
+                padding: 14px;
+            }
+
+            .section-card {
+                padding: 14px;
+            }
+
+            button {
+                min-width: 92px;
+                font-size: 15px;
+                padding: 13px 14px;
+            }
+
+            .btn-wide {
+                min-width: 112px;
+            }
+
+            .status-value {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="topbar">
+            <div class="brand">
+                <span class="brand-badge">AI SELF-DRIVING CAR DASHBOARD</span>
+                <h1 class="title">AI Car Web Control</h1>
+                <p class="subtitle">Live video, manual drive, auto mode, and camera control</p>
+            </div>
+            <div class="live-pill">
+                <span class="live-dot"></span>
+                <span>System Online</span>
+            </div>
+        </div>
+
+        <div class="main-layout">
+            <section class="panel">
+                <div class="panel-inner">
+                    <div class="video-shell">
+                        <img src="{{ url_for('video_feed') }}" alt="video stream">
+                    </div>
+
+                    <div class="status-grid">
+                        <div class="status-card">
+                            <div class="status-label">AI Status</div>
+                            <div class="status-value" id="ai-msg">AUTO</div>
+                        </div>
+                        <div class="status-card">
+                            <div class="status-label">Drive Status</div>
+                            <div class="status-value" id="control-msg">STOP</div>
+                        </div>
+                        <div class="status-card">
+                            <div class="status-label">Camera Status</div>
+                            <div class="status-value" id="camera-msg">CENTER</div>
+                        </div>
+                    </div>
+
+                    <div class="footer-note">
+                        Click the page first, then use the keyboard. Press Auto Start to enable auto driving.
+                    </div>
+                </div>
+            </section>
+
+            <aside class="side-wrap">
+                <div class="section-card">
+                    <div class="section-head">
+                        <h2>Car Control</h2>
+                        <p>Keyboard: W forward / A left / S backward / D right</p>
+                    </div>
+
+                    <div class="pad">
+                        <div class="row">
+                            <button class="btn-main"
+                                onmousedown="sendCmd('forward')"
+                                onmouseup="sendCmd('stop')"
+                                onmouseleave="sendCmd('stop')"
+                                ontouchstart="sendCmd('forward')"
+                                ontouchend="sendCmd('stop')">
+                                Forward
+                            </button>
+                        </div>
+
+                        <div class="row">
+                            <button class="btn-main"
+                                onmousedown="sendCmd('left')"
+                                onmouseup="sendCmd('stop')"
+                                onmouseleave="sendCmd('stop')"
+                                ontouchstart="sendCmd('left')"
+                                ontouchend="sendCmd('stop')">
+                                Left
+                            </button>
+
+                            <button class="btn-stop"
+                                onmousedown="sendCmd('stop')"
+                                ontouchstart="sendCmd('stop')">
+                                Stop
+                            </button>
+
+                            <button class="btn-main"
+                                onmousedown="sendCmd('right')"
+                                onmouseup="sendCmd('stop')"
+                                onmouseleave="sendCmd('stop')"
+                                ontouchstart="sendCmd('right')"
+                                ontouchend="sendCmd('stop')">
+                                Right
+                            </button>
+                        </div>
+
+                        <div class="row">
+                            <button class="btn-main"
+                                onmousedown="sendCmd('backward')"
+                                onmouseup="sendCmd('stop')"
+                                onmouseleave="sendCmd('stop')"
+                                ontouchstart="sendCmd('backward')"
+                                ontouchend="sendCmd('stop')">
+                                Backward
+                            </button>
+                        </div>
+
+                        <div class="row">
+                            <button class="btn-auto btn-wide" onclick="sendCmd('auto_on')">Auto Start</button>
+                            <button class="btn-stop btn-wide" onclick="sendCmd('auto_off')">Auto Stop</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-card">
+                    <div class="section-head">
+                        <h2>Camera Control</h2>
+                        <p>Keyboard: I up / J left / K down / L right / U center</p>
+                    </div>
+
+                    <div class="pad">
+                        <div class="row">
+                            <button class="btn-cam" onclick="sendCameraCmd('cam_up')">Up</button>
+                        </div>
+
+                        <div class="row">
+                            <button class="btn-cam" onclick="sendCameraCmd('cam_left')">Left</button>
+                            <button class="btn-cam" onclick="sendCameraCmd('cam_center')">Center</button>
+                            <button class="btn-cam" onclick="sendCameraCmd('cam_right')">Right</button>
+                        </div>
+
+                        <div class="row">
+                            <button class="btn-cam" onclick="sendCameraCmd('cam_down')">Down</button>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <script>
+        let currentAction = "stop";
+        let currentCameraAction = "center";
+        const pressedKeys = new Set();
+
+        function updateControlMsg(action) {
+            const el = document.getElementById("control-msg");
+            el.textContent = String(action || "stop").toUpperCase();
+            el.classList.remove("status-online", "status-auto", "status-stop");
+
+            if (action === "auto mode" || action === "auto_on") {
+                el.classList.add("status-auto");
+            } else if (action === "stop" || action === "auto_off") {
+                el.classList.add("status-stop");
+            } else {
+                el.classList.add("status-online");
+            }
+        }
+
+        function updateCameraMsg(action) {
+            document.getElementById("camera-msg").textContent = String(action || "center").toUpperCase();
+        }
+
+        function updateAiMsg(text) {
+            const value = String(text || "AUTO").trim();
+            document.getElementById("ai-msg").textContent = value.toUpperCase();
+        }
+
+        function sendCmd(action) {
+            if (currentAction === action && !["auto_on", "auto_off"].includes(action)) {
+                return;
+            }
+
+            currentAction = action;
+            updateControlMsg(action);
+
+            fetch("/control", {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: "action=" + encodeURIComponent(action)
+            }).catch((err) => console.error("control error:", err));
+        }
+
+        function sendCameraCmd(action) {
+            currentCameraAction = action;
+            updateCameraMsg(action);
+
+            fetch("/control", {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: "action=" + encodeURIComponent(action.replace("cam_", "camera_"))
+            }).catch((err) => console.error("camera error:", err));
+        }
+
+        function resolveActionFromKeys() {
+            if (pressedKeys.has("w")) return "forward";
+            if (pressedKeys.has("a")) return "left";
+            if (pressedKeys.has("s")) return "backward";
+            if (pressedKeys.has("d")) return "right";
+            return "stop";
+        }
+
+        document.addEventListener("keydown", function(event) {
+            const key = event.key.toLowerCase();
+
+            if (["w", "a", "s", "d"].includes(key)) {
+                event.preventDefault();
+                pressedKeys.add(key);
+                sendCmd(resolveActionFromKeys());
+            } else if (key === "i") {
+                event.preventDefault();
+                sendCameraCmd("cam_up");
+            } else if (key === "j") {
+                event.preventDefault();
+                sendCameraCmd("cam_left");
+            } else if (key === "k") {
+                event.preventDefault();
+                sendCameraCmd("cam_down");
+            } else if (key === "l") {
+                event.preventDefault();
+                sendCameraCmd("cam_right");
+            } else if (key === "u") {
+                event.preventDefault();
+                sendCameraCmd("cam_center");
+            }
+        });
+
+        document.addEventListener("keyup", function(event) {
+            const key = event.key.toLowerCase();
+
+            if (["w", "a", "s", "d"].includes(key)) {
+                event.preventDefault();
+                pressedKeys.delete(key);
+                sendCmd(resolveActionFromKeys());
+            }
+        });
+
+        window.addEventListener("blur", function() {
+            pressedKeys.clear();
+            sendCmd("stop");
+        });
+
+        function updateStatus() {
+            fetch("/status")
+                .then((response) => response.json())
+                .then((data) => {
+                    updateAiMsg(data.ai_msg);
+
+                    if (data.auto_mode) {
+                        updateControlMsg("auto mode");
+                    } else {
+                        updateControlMsg(currentAction);
+                    }
+
+                    updateCameraMsg(data.cam_state || currentCameraAction);
+                })
+                .catch((err) => console.error("status error:", err));
+        }
+
+        updateControlMsg("stop");
+        updateCameraMsg("center");
+        updateAiMsg("auto");
+        setInterval(updateStatus, 1000);
+    </script>
+</body>
+</html>
