@@ -57,7 +57,7 @@ Browser UI (Remote Control)
 
 ## 📂 專案結構
 
-
+```
 ai_car_project/
 ├── app.py # Flask 主程式（影像串流 + 控制）
 ├── motor_control.py # 馬達控制模組
@@ -67,7 +67,7 @@ ai_car_project/
 └── static/
 ├── css/style.css # 網頁樣式
 └── js/main.js # 控制邏輯
----
+```
 
 ## ⚙️ 執行方式
 
