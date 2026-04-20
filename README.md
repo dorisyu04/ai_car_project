@@ -36,7 +36,7 @@
 
 ## 🧠 系統架構
 
-
+```
 Camera (PiCamera2)
 ↓
 Image Processing (OpenCV)
@@ -50,6 +50,7 @@ Motor Control (PCA9685)
 Flask Web Server
 ↓
 Browser UI (Remote Control)
+```
 
 
 ---
